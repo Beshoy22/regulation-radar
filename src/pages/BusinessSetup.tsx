@@ -169,10 +169,10 @@ export default function BusinessSetup() {
     location: "",
     business_description: "",
   });
-  const [files, setFiles] = useState<{ [key: string]: File | null }>({
-    ce_certificate: null,
-    esg_reports: null,
-    sustainability_certs: null,
+  const [files, setFiles] = useState<{ [key: string]: File[] }>({
+    ce_certificate: [],
+    esg_reports: [],
+    sustainability_certs: [],
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -180,9 +180,15 @@ export default function BusinessSetup() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: string) => {
-    if (e.target.files && e.target.files[0]) {
-      setFiles({ ...files, [type]: e.target.files[0] });
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setFiles({ ...files, [type]: [...files[type], ...newFiles] });
     }
+  };
+
+  const removeFile = (type: string, index: number) => {
+    const updatedFiles = files[type].filter((_, i) => i !== index);
+    setFiles({ ...files, [type]: updatedFiles });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -205,10 +211,10 @@ export default function BusinessSetup() {
       if (businessError) throw businessError;
 
       // Upload files to storage and save metadata
-      for (const [fileType, file] of Object.entries(files)) {
-        if (file) {
+      for (const [fileType, fileList] of Object.entries(files)) {
+        for (const file of fileList) {
           const fileExt = file.name.split(".").pop();
-          const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+          const fileName = `${user.id}/${Date.now()}_${file.name}`;
           
           const { error: uploadError } = await supabase.storage
             .from("documents")
@@ -216,6 +222,11 @@ export default function BusinessSetup() {
 
           if (uploadError) {
             console.error("File upload error:", uploadError);
+            toast({
+              title: "Upload Warning",
+              description: `Failed to upload ${file.name}`,
+              variant: "destructive",
+            });
           } else {
             const { data: { publicUrl } } = supabase.storage
               .from("documents")
@@ -338,46 +349,106 @@ export default function BusinessSetup() {
                     />
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <h3 className="font-semibold">Upload Documents</h3>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="ce_certificate">CE Certificate</Label>
+                    <div className="space-y-3">
+                      <Label htmlFor="ce_certificate">CE Certificate (PDF)</Label>
                       <div className="flex items-center gap-2">
                         <Input
                           id="ce_certificate"
                           type="file"
                           onChange={(e) => handleFileChange(e, "ce_certificate")}
-                          accept=".pdf,.doc,.docx"
+                          accept=".pdf"
+                          multiple
+                          className="cursor-pointer"
                         />
-                        <Upload className="h-5 w-5 text-muted-foreground" />
+                        <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       </div>
+                      {files.ce_certificate.length > 0 && (
+                        <div className="space-y-2 mt-2">
+                          {files.ce_certificate.map((file, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md text-sm">
+                              <span className="truncate flex-1">{file.name}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeFile("ce_certificate", index)}
+                                className="h-6 w-6 p-0"
+                              >
+                                ×
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="esg_reports">ESG Reports</Label>
+                    <div className="space-y-3">
+                      <Label htmlFor="esg_reports">ESG Reports (PDF)</Label>
                       <div className="flex items-center gap-2">
                         <Input
                           id="esg_reports"
                           type="file"
                           onChange={(e) => handleFileChange(e, "esg_reports")}
-                          accept=".pdf,.doc,.docx"
+                          accept=".pdf"
+                          multiple
+                          className="cursor-pointer"
                         />
-                        <Upload className="h-5 w-5 text-muted-foreground" />
+                        <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       </div>
+                      {files.esg_reports.length > 0 && (
+                        <div className="space-y-2 mt-2">
+                          {files.esg_reports.map((file, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md text-sm">
+                              <span className="truncate flex-1">{file.name}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeFile("esg_reports", index)}
+                                className="h-6 w-6 p-0"
+                              >
+                                ×
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="sustainability_certs">Sustainability Certificates</Label>
+                    <div className="space-y-3">
+                      <Label htmlFor="sustainability_certs">Sustainability Certificates (PDF)</Label>
                       <div className="flex items-center gap-2">
                         <Input
                           id="sustainability_certs"
                           type="file"
                           onChange={(e) => handleFileChange(e, "sustainability_certs")}
-                          accept=".pdf,.doc,.docx"
+                          accept=".pdf"
+                          multiple
+                          className="cursor-pointer"
                         />
-                        <Upload className="h-5 w-5 text-muted-foreground" />
+                        <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                       </div>
+                      {files.sustainability_certs.length > 0 && (
+                        <div className="space-y-2 mt-2">
+                          {files.sustainability_certs.map((file, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md text-sm">
+                              <span className="truncate flex-1">{file.name}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeFile("sustainability_certs", index)}
+                                className="h-6 w-6 p-0"
+                              >
+                                ×
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 

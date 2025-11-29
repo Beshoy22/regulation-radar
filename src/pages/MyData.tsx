@@ -153,39 +153,60 @@ export default function MyData() {
                     {files.length === 0 ? (
                       <p className="text-sm text-muted-foreground">No documents uploaded yet</p>
                     ) : (
-                      <div className="space-y-3">
-                        {files.map((file) => (
-                          <div
-                            key={file.id}
-                            className="flex items-center justify-between p-4 border rounded-lg"
-                          >
-                            <div className="flex items-center gap-3">
-                              <FileText className="h-5 w-5 text-primary" />
-                              <div>
-                                <p className="font-medium">{file.file_name}</p>
-                                <p className="text-sm text-muted-foreground capitalize">
-                                  {file.file_type.replace("_", " ")}
-                                </p>
+                      <div className="space-y-6">
+                        {/* Group files by type */}
+                        {['ce_certificate', 'esg_reports', 'sustainability_certs'].map((fileType) => {
+                          const typeFiles = files.filter(f => f.file_type === fileType);
+                          if (typeFiles.length === 0) return null;
+                          
+                          const typeLabel = fileType.split('_').map(w => 
+                            w.charAt(0).toUpperCase() + w.slice(1)
+                          ).join(' ');
+                          
+                          return (
+                            <div key={fileType} className="space-y-3">
+                              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                                {typeLabel}
+                              </h3>
+                              <div className="space-y-2">
+                                {typeFiles.map((file) => (
+                                  <div
+                                    key={file.id}
+                                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                                  >
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                      <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                                      <div className="min-w-0 flex-1">
+                                        <p className="font-medium truncate">{file.file_name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                          Uploaded {new Date(file.uploaded_at).toLocaleDateString()}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-1 flex-shrink-0">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => window.open(file.file_url, "_blank")}
+                                        title="Download"
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleDeleteFile(file.id)}
+                                        title="Delete"
+                                      >
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => window.open(file.file_url, "_blank")}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteFile(file.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </CardContent>

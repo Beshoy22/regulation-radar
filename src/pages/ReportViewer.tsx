@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Printer } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function ReportViewer() {
   const { reportId } = useParams();
@@ -116,8 +117,37 @@ export default function ReportViewer() {
               )}
 
               {/* Markdown Analysis */}
-              <div className="prose prose-slate max-w-none prose-headings:font-bold prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3 prose-p:text-base prose-p:leading-relaxed prose-ul:my-4 prose-li:my-2 prose-table:w-full prose-table:border-collapse prose-th:border prose-th:border-border prose-th:p-3 prose-th:bg-muted prose-td:border prose-td:border-border prose-td:p-3 prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic">
-                <ReactMarkdown>{report.report_markdown}</ReactMarkdown>
+              <div className="prose prose-slate dark:prose-invert max-w-none 
+                prose-headings:font-bold 
+                prose-h1:text-3xl prose-h1:mt-8 prose-h1:mb-6
+                prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-h2:text-primary
+                prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3 prose-h3:text-foreground
+                prose-h4:text-lg prose-h4:mt-4 prose-h4:mb-2
+                prose-p:text-base prose-p:leading-relaxed prose-p:my-3
+                prose-strong:font-semibold prose-strong:text-foreground
+                prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6
+                prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-6
+                prose-li:my-2 prose-li:text-foreground
+                prose-table:w-full prose-table:border-collapse prose-table:my-6
+                prose-th:border prose-th:border-border prose-th:p-3 prose-th:bg-muted prose-th:font-semibold prose-th:text-left
+                prose-td:border prose-td:border-border prose-td:p-3 prose-td:text-foreground
+                prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:my-4
+                prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+                prose-hr:my-8 prose-hr:border-border">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h2: ({node, ...props}) => <h2 className="text-primary" {...props} />,
+                    h3: ({node, ...props}) => <h3 className="text-foreground" {...props} />,
+                    table: ({node, ...props}) => (
+                      <div className="overflow-x-auto my-6">
+                        <table {...props} />
+                      </div>
+                    ),
+                  }}
+                >
+                  {report.report_markdown}
+                </ReactMarkdown>
               </div>
             </Card>
           </div>
